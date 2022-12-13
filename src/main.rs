@@ -43,6 +43,29 @@ fn parse_xml(xml: &str) -> Vec<String> {
     links
 }
 
+// Create reader object from xml string
+fn create_reader(xml: &str) -> Reader<&[u8]> {
+    let mut reader = Reader::from_str(xml);
+    reader.trim_text(true);
+    reader
+}
+
+// Function that parses xml up to <li> and returns reader
+fn parses_to_li<'a>(reader: &'a mut Reader<&'a [u8]>) -> &'a Reader<&[u8]> {
+    match reader.read_event() {
+        Ok(Event::Start(ref e)) => {
+            if e.name() == QName(b"li") {
+                return reader;
+            } else {
+                return parses_to_li(reader);
+            }
+        }
+        Ok(Event::Eof) => panic!("EOF"),
+        Err(e) => panic!("Error at position {}: {:?}", reader.buffer_position(), e),
+        _ => panic!("Error"),
+    }
+}
+
 fn main() {
     println!("Hello, world!");
 }
